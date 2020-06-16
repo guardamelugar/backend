@@ -39,6 +39,7 @@ namespace GuardameLugar.DataAccess.Helpers
 			garageDto.direccion = (reader["direccion"].ToString());
 			garageDto.garage_id = int.Parse(reader["garage_id"].ToString());
 			garageDto.localidad_garage = int.Parse(reader["localidad_garage"].ToString());
+			garageDto.nombre_localidad = (reader["nombre_localidad"].ToString());
 			garageDto.lugar_autos = int.Parse(reader["lugar_autos"].ToString());
 			garageDto.lugar_bicicletas = int.Parse(reader["lugar_bicicletas"].ToString());
 			garageDto.lugar_camionetas = int.Parse(reader["lugar_camionetas"].ToString());

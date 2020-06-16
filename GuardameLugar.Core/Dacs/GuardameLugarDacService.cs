@@ -16,10 +16,12 @@ namespace GuardameLugar.Core.Dacs
 		Task SaveUser(UserDto userDto);
 		Task<bool> MailValidation(string mail);
 		Task<LogInDto> LogInUser(string user, string password);
-		Task GarageRegister(GarageDto garageDto);
+		Task GarageRegister(GarageRegisterDto garageRegisterDto);
 		Task<List<LocalidadesDto>> Localidades();
 		Task<GarageDto> GetGarageById(int garageId);
 		Task<List<GarageDto>> GetGarageByUser(int userId);
+		Task<List<GarageDto>> GetGarages(string query);
+		Task UpdateGarage(UpdateGarageDto updateGarageDto);
 	}
 
 	public class GuardameLugarDacService : IGuardameLugarDacService, IDisposable
@@ -48,9 +50,9 @@ namespace GuardameLugar.Core.Dacs
 			return await _guardameLugarDac.LogInUser(user, password);
 		}
 
-		public async Task GarageRegister(GarageDto garageDto)
+		public async Task GarageRegister(GarageRegisterDto garageRegisterDto)
 		{
-			await _guardameLugarDac.GarageRegister(garageDto);
+			await _guardameLugarDac.GarageRegister(garageRegisterDto);
 		}
 
 		public async Task<List<LocalidadesDto>> Localidades()
@@ -69,6 +71,16 @@ namespace GuardameLugar.Core.Dacs
 		{
 			List<GarageDto> garageList = await _guardameLugarDac.GetGarageByUser(userId);
 			return garageList;
+		}
+		public async Task<List<GarageDto>> GetGarages(string query)
+		{
+			List<GarageDto> garageList = await _guardameLugarDac.GetGarages(query);
+			return garageList;
+		}
+
+		public async Task UpdateGarage(UpdateGarageDto updateGarageDto)
+		{
+			await _guardameLugarDac.UpdateGarage(updateGarageDto);
 		}
 
 		#region --ITransactionDACAsync--

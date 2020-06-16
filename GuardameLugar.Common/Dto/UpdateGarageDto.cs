@@ -1,7 +1,7 @@
 ﻿
 namespace GuardameLugar.Common.Dto
 {
-	public class GarageDto
+	public class UpdateGarageDto
 	{
 		public int garage_id { get; set; }
 		public string nombre_garage { get; set; }
@@ -14,6 +14,5 @@ namespace GuardameLugar.Common.Dto
 		public int lugar_camionetas { get; set; }
 		public int lugar_bicicletas { get; set; }
 		public decimal altura_maxima { get; set; }
-		public string nombre_localidad { get; set; }
 	}
 }

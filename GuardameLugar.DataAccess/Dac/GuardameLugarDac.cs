@@ -148,7 +148,7 @@ namespace GuardameLugar.DataAccess
 		#endregion
 
 		#region Garage
-		public async Task GarageRegister(GarageDto garageDto)
+		public async Task GarageRegister(GarageRegisterDto garageRegisterDto)
 		{
 
 			using (SqlCommand oCommand = await base.GetCommandAsync())
@@ -161,23 +161,23 @@ namespace GuardameLugar.DataAccess
 											SELECT SCOPE_IDENTITY()";
 
 
-					oCommand.AddParameter("altura_maxima", DbType.Decimal, garageDto.altura_maxima);
-					oCommand.AddParameter("coordenadas", DbType.String, garageDto.coordenadas);
-					oCommand.AddParameter("telefono", DbType.String, garageDto.telefono);
-					oCommand.AddParameter("direccion", DbType.String, garageDto.direccion);
-					oCommand.AddParameter("localidad_garage", DbType.Int32, garageDto.localidad_garage);
-					oCommand.AddParameter("lugar_autos", DbType.Int32, garageDto.lugar_autos);
-					oCommand.AddParameter("lugar_bicicletas", DbType.Int32, garageDto.lugar_bicicletas);
-					oCommand.AddParameter("lugar_camionetas", DbType.Int32, garageDto.lugar_camionetas);
-					oCommand.AddParameter("lugar_motos", DbType.Int32, garageDto.lugar_motos);
-					oCommand.AddParameter("nombre_garage", DbType.String, garageDto.nombre_garage);
+					oCommand.AddParameter("altura_maxima", DbType.Decimal, garageRegisterDto.altura_maxima);
+					oCommand.AddParameter("coordenadas", DbType.String, garageRegisterDto.coordenadas);
+					oCommand.AddParameter("telefono", DbType.String, garageRegisterDto.telefono);
+					oCommand.AddParameter("direccion", DbType.String, garageRegisterDto.direccion);
+					oCommand.AddParameter("localidad_garage", DbType.Int32, garageRegisterDto.localidad_garage);
+					oCommand.AddParameter("lugar_autos", DbType.Int32, garageRegisterDto.lugar_autos);
+					oCommand.AddParameter("lugar_bicicletas", DbType.Int32, garageRegisterDto.lugar_bicicletas);
+					oCommand.AddParameter("lugar_camionetas", DbType.Int32, garageRegisterDto.lugar_camionetas);
+					oCommand.AddParameter("lugar_motos", DbType.Int32, garageRegisterDto.lugar_motos);
+					oCommand.AddParameter("nombre_garage", DbType.String, garageRegisterDto.nombre_garage);
 
 					int garage_id = Convert.ToInt32(oCommand.ExecuteScalar());
 
 					oCommand.CommandText = @"INSERT INTO [dbo].[garage_por_usuario] (user_id, garage_id) VALUES 
 											((select user_id from [dbo].[usuarios] where user_id = @user_id), (select [garage_id] from [dbo].[garages] where [garage_id] = @garage_id));";
 
-					oCommand.AddParameter("user_id", DbType.Int32, garageDto.user_id);
+					oCommand.AddParameter("user_id", DbType.Int32, garageRegisterDto.user_id);
 					oCommand.AddParameter("garage_id", DbType.Int32, garage_id);
 
 					await oCommand.ExecuteNonQueryAsync();
@@ -240,7 +240,7 @@ namespace GuardameLugar.DataAccess
 				try
 				{
 					oCommand.CommandType = CommandType.Text;
-					oCommand.CommandText = @"SELECT * FROM garages where garage_id = @garage_id;";
+					oCommand.CommandText = @"SELECT * FROM garages g inner join [guardameLugarDB].[dbo].localidades l on g.localidad_garage = l.localidad_id where garage_id = @garage_id order by l.nombre_localidad ;";
 
 					oCommand.AddParameter("garage_id", DbType.Int32, garageId);
 
@@ -277,7 +277,8 @@ namespace GuardameLugar.DataAccess
 				try
 				{
 					oCommand.CommandType = CommandType.Text;
-					oCommand.CommandText = @"select * From garages where garage_id in (select garage_id from garage_por_usuario where user_id = @user_id);";
+					oCommand.CommandText = @"select * From garages g inner join [guardameLugarDB].[dbo].localidades l on g.localidad_garage = l.localidad_id 
+											where garage_id in (select garage_id from garage_por_usuario where user_id = @user_id) order by l.nombre_localidad;";
 
 					oCommand.AddParameter("user_id", DbType.Int32, userId);
 
@@ -305,9 +306,82 @@ namespace GuardameLugar.DataAccess
 			}
 		}
 
+		public async Task<List<GarageDto>> GetGarages(string query)
+		{
+			List<GarageDto> garageList = new List<GarageDto>();
+			SqlDataReader reader = null;
+			using (SqlCommand oCommand = await base.GetCommandAsync())
+			{
+				try
+				{
+					oCommand.CommandType = CommandType.Text;
+					oCommand.CommandText = query;
+
+					IAsyncResult asyncResult = ExecuteAsync(oCommand, "GetGarages");
+					reader = oCommand.EndExecuteReader(asyncResult);
+
+					while (await reader.ReadAsync())
+					{
+						garageList.Add(ModelBuilderHelper.BuildGaragesData(reader));
+					}
+					return garageList;
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex, GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+					throw new AggregateException(_classFullName + ".GetGarages(string query)", ex);
+				}
+				finally
+				{
+					if (reader != null && !reader.IsClosed)
+						reader.Close();
+					if (!TransactionOpened())
+						base.CloseCommand();
+				}
+			}
+		}
+
+		public async Task UpdateGarage(UpdateGarageDto updateGarageDto)
+		{
+
+			using (SqlCommand oCommand = await base.GetCommandAsync())
+			{
+				try
+				{
+					oCommand.CommandText = @"Update garages set [nombre_garage] = @nombre_garage, [direccion] = @direccion, [coordenadas] = @coordenadas, [localidad_garage] = @localidad_garage,
+											[telefono] = @telefono, [lugar_autos] = @lugar_autos, [lugar_motos] = @lugar_motos, [lugar_camionetas] = @lugar_camionetas,
+											[lugar_bicicletas] = @lugar_bicicletas, [altura_maxima] = @altura_maxima where [garage_id] = @garage_id;";
+
+					oCommand.AddParameter("garage_id", DbType.Int32, updateGarageDto.garage_id);
+					oCommand.AddParameter("altura_maxima", DbType.Decimal, updateGarageDto.altura_maxima);
+					oCommand.AddParameter("coordenadas", DbType.String, updateGarageDto.coordenadas);
+					oCommand.AddParameter("telefono", DbType.String, updateGarageDto.telefono);
+					oCommand.AddParameter("direccion", DbType.String, updateGarageDto.direccion);
+					oCommand.AddParameter("localidad_garage", DbType.Int32, updateGarageDto.localidad_garage);
+					oCommand.AddParameter("lugar_autos", DbType.Int32, updateGarageDto.lugar_autos);
+					oCommand.AddParameter("lugar_bicicletas", DbType.Int32, updateGarageDto.lugar_bicicletas);
+					oCommand.AddParameter("lugar_camionetas", DbType.Int32, updateGarageDto.lugar_camionetas);
+					oCommand.AddParameter("lugar_motos", DbType.Int32, updateGarageDto.lugar_motos);
+					oCommand.AddParameter("nombre_garage", DbType.String, updateGarageDto.nombre_garage);
+
+					await oCommand.ExecuteNonQueryAsync();
+
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex, GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+					throw new AggregateException(_classFullName + ".UpdateGarage(GarageDto garageDto)", ex);
+				}
+				finally
+				{
+					if (!TransactionOpened())
+						base.CloseCommand();
+				}
+			}
+		}
 		#endregion
 
-		#region ExecutePArameters
+		#region ExecuteParameters
 		private IAsyncResult ExecuteAsync(SqlCommand oCommand, string methods = "*")
 		{
 			var watch = System.Diagnostics.Stopwatch.StartNew();

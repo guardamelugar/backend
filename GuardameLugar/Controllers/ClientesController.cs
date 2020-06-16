@@ -58,7 +58,7 @@ namespace GuardameLugar.API.Controllers
 
         [HttpGet("login/{user}/{password}")]
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LogInDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(JsonMessage))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(JsonMessage))]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(JsonMessage))]

@@ -30,15 +30,15 @@ namespace GuardameLugar.API.Controllers
 
         [HttpPost("GarageRegister")]
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(JsonMessage))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(JsonMessage))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(JsonMessage))]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(JsonMessage))]
-        public async Task<ActionResult> GarageRegister(GarageDto garageDto)
+        public async Task<ActionResult> GarageRegister(GarageRegisterDto garageRegisterDto)
         {
             try
             {
-                await _garageService.GarageRegister(garageDto);
+                await _garageService.GarageRegister(garageRegisterDto);
                 return Response.Ok();
             }
             catch (BaseException e)
@@ -115,6 +115,56 @@ namespace GuardameLugar.API.Controllers
             {
                 List<GarageDto> garageList = await _garageService.GetGarageByUser(userId);
                 return Response.Ok(garageList);
+            }
+            catch (BaseException e)
+            {
+                _logger.LogInformation(ExceptionHandlerHelper.ExceptionMessageStringToLogger(e));
+                return Response.HandleExceptions(e);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+                return Response.InternalServerError();
+            }
+        }
+
+        [HttpGet]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GarageDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(JsonMessage))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(JsonMessage))]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(JsonMessage))]
+        public async Task<ActionResult> GetGarages([FromQuery]string vehiculo, [FromQuery]int? localidad)
+        {
+            try
+            {
+                List<GarageDto> garageList = await _garageService.GetGarages(vehiculo, localidad);
+                return Response.Ok(garageList);
+            }
+            catch (BaseException e)
+            {
+                _logger.LogInformation(ExceptionHandlerHelper.ExceptionMessageStringToLogger(e));
+                return Response.HandleExceptions(e);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, GetType().Name + "." + MethodBase.GetCurrentMethod().Name);
+                return Response.InternalServerError();
+            }
+        }
+
+        [HttpPut]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(JsonMessage))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(JsonMessage))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(JsonMessage))]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(JsonMessage))]
+        public async Task<ActionResult> UpdateGarage(UpdateGarageDto updateGarageDto)
+        {
+            try
+            {
+                await _garageService.UpdateGarage(updateGarageDto);
+                return Response.Ok();
             }
             catch (BaseException e)
             {
