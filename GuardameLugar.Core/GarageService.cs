@@ -102,7 +102,7 @@ namespace GuardameLugar.Core
 
 			if (string.IsNullOrEmpty(vehiculos) && localidades == null)
 			{
-				query = "select top 10 * from garages g inner join [guardameLugarDB].[dbo].localidades l on g.localidad_garage = l.localidad_id order by l.nombre_localidad";
+				query = "select top 20 * from garages g inner join [guardameLugarDB].[dbo].localidades l on g.localidad_garage = l.localidad_id order by l.nombre_localidad";
 			}
 			else if (string.IsNullOrEmpty(vehiculos) && localidades > 0)
 			{
